@@ -1,0 +1,122 @@
+const wrapper = document.querySelector(".wrapper"),
+    inputPart = wrapper.querySelector(".input-part"),
+    infoTxt = inputPart.querySelector(".info-txt"),
+    inputField = inputPart.querySelector("input"),
+    locationBtn = inputPart.querySelector("button")
+    wIcon = document.querySelector(".weather-part img")
+    arrowBack = document.querySelector("header i")
+
+let api;
+let key = 'e015f644263d7dfc6fd26d20eb9d287c';
+const icon = document.getElementById("favla");
+// console.log("icon",icon);
+const favsehir = document.getElementById("a");
+// console.log("favsehir",favsehir);
+
+inputField.addEventListener("keyup", e => {
+    if (e.key == "Enter" && inputField.value != "") {
+        requestApi(inputField.value);
+
+        favsehir.className.add("active");
+
+    }
+})
+
+
+function requestApi(city) {
+    api = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${key}`;
+    fetchData()
+}
+
+function fetchData() {
+    infoTxt.innerText = "Sonuçlar getiriliyor..."
+    infoTxt.classList.add("pending")
+    fetch(api).then(response => response.json()).then(result => weatherDetails(result))
+}
+
+function weatherDetails(info) {
+    if (info.cod == "404") {
+        infoTxt.classList.replace("pending", "error")
+        infoTxt.innerText = `${inputField.value} şehri bulunamadı...`
+    } else {
+        const city = info.name
+        const country = info.sys.country
+        const { description, id } = info.weather[0]
+        const { feels_like, humidity, temp } = info.main
+
+        // Hava durumu ikonları
+        if (id == 800) {
+            wIcon.src = "icons/clear.svg"
+        } else if (id >= 200 && id <= 232) {
+            wIcon.src = "icons/storm.svg"
+        } else if (id >= 600 && id <= 622) {
+            wIcon.src = "icons/snow.svg"
+        } else if (id >= 701 && id <= 781) {
+            wIcon.src = "icons/haze.svg"
+        } else if (id >= 801 && id <= 804) {
+            wIcon.src = "icons/cloud.svg"
+        } else if ((id >= 300 && id <= 321) || (id >= 500 && id <= 531)) {
+            wIcon.src = "icons/rain.svg"
+        }
+
+        // Sıcaklık değerlerini Celsius'a çevirme
+        wrapper.querySelector(".temp .numb").innerText = Math.floor(temp - 270.15)  // Celsius'a çevirme
+        wrapper.querySelector(".temp .numb-2").innerText = Math.floor(feels_like - 270.15)  // Feels like değerini Celsius'a çevirme
+        wrapper.querySelector(".weather").innerText = description
+        wrapper.querySelector(".location").innerText = `${city}, ${country}`
+        wrapper.querySelector(".humidity span").innerText = `${humidity}%`
+
+        // Hata ve bekleme durumlarını kaldırma
+        infoTxt.classList.remove("pending", "error")
+        wrapper.classList.add("active")
+    }
+}
+
+
+arrowBack.addEventListener("click", () => {
+    wrapper.classList.remove("active")
+})
+
+
+
+
+
+
+
+
+// locationBtn.addEventListener("click", () => {
+//     if (navigator.geolocation) {
+//         navigator.geolocation.getCurrentPosition(onSuccess, onError)
+//         // console.log("kontol", navigator.geolocation.getCurrentPosition.error)
+
+
+//         favsehir.classList.add("active");
+//         // Fare üzerine geldiğinde (hover) class'ı fa-solid fa-star olarak değiştirme
+//         // favsehir.addEventListener("mouseover", () => {
+//         //     icon.classList.remove("fa-regular", "fa-star");
+//         //     icon.classList.add("fa-solid", "fa-star");
+//         // });
+
+//         // // Fare çıktığında orijinal class'ı geri döndürme
+//         // favsehir.addEventListener("mouseout", () => {
+//         //     icon.classList.remove("fa-solid", "fa-star");
+//         //     icon.classList.add("fa-regular", "fa-star"); // Eğer eski sınıf buyduysa geri ekleyin
+//         // });
+
+//     } else {
+//         console.log("Tarayıcınız geolocation'ı desteklemiyor...")
+//     }
+// })
+
+// function onSuccess(position) {
+//     const { latitude, longitude } = position.coords;
+//     console.log("position: ", position)
+//     api = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${key}`;
+//     console.log("api ", api);
+//     fetchData()
+// }
+
+// function onError(error) {
+//     infoTxt.innerText = error.message
+//     infoTxt.classList.add("error")
+// }
